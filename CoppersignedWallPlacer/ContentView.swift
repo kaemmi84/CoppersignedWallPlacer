@@ -40,12 +40,22 @@ struct ARViewContainer: UIViewRepresentable {
     }
     
     class Coordinator: NSObject {
+        // Eigenschaft zum Speichern des aktuellen Ankers
+        var currentAnchor: AnchorEntity?
+        
         @objc func handleTap(sender: UITapGestureRecognizer) {
             guard let arView = sender.view as? ARView else { return }
             let tapLocation = sender.location(in: arView)
             
             // Raycast durchführen
             if let result = arView.raycast(from: tapLocation, allowing: .estimatedPlane, alignment: .vertical).first {
+                
+                // Vorheriges Anker-Entity entfernen, falls vorhanden
+                if let existingAnchor = currentAnchor {
+                    arView.scene.removeAnchor(existingAnchor)
+                    currentAnchor = nil
+                }
+                
                 // Anker erstellen
                 let anchor = AnchorEntity(world: result.worldTransform)
                 
@@ -70,6 +80,10 @@ struct ARViewContainer: UIViewRepresentable {
                 
                 // Anker zur Szene hinzufügen
                 arView.scene.addAnchor(anchor)
+                
+                
+                // Aktuelles Anker-Entity aktualisieren
+                currentAnchor = anchor
             }
         }
     }
