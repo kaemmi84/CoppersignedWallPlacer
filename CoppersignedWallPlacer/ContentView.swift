@@ -11,9 +11,40 @@ import ARKit
 
 
 struct ContentView: View {
+    @State private var showSettings = false
+    
     var body: some View {
-        ARViewContainer()
-            .edgesIgnoringSafeArea(.all)
+        ZStack {
+            // ARViewContainer nimmt den gesamten Hintergrund ein
+            ARViewContainer()
+                .edgesIgnoringSafeArea(.all)
+            
+            // Zahnrad-Button oben rechts
+            VStack {
+                HStack {
+                    Spacer()
+                    
+                    Button(action: {
+                        // Aktion beim Tippen auf den Zahnrad-Button
+                        print("Zahnrad-Button wurde gedrückt")
+                        showSettings.toggle()
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .padding()
+                            .background(Color.white.opacity(0.7))
+                            .clipShape(Circle())
+                            .shadow(radius: 5)
+                    }
+                    .padding([.top, .trailing], 20)
+                    .sheet(isPresented: $showSettings) {
+                        SettingsView()
+                    }
+                }
+                Spacer()
+            }
+        }
     }
 }
 
@@ -88,6 +119,30 @@ struct ARViewContainer: UIViewRepresentable {
         }
     }
 }
+
+struct SettingsView: View {
+    // Zugriff auf die Präsentationsumgebung
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                Text("Einstellungen")
+                    .font(.largeTitle)
+                    .padding()
+                
+                // Füge hier deine Einstellungsoptionen hinzu
+                
+                Spacer()
+            }
+            .navigationBarItems(trailing: Button("Schließen") {
+                // Logik zum Schließen der Ansicht
+                dismiss()
+            })
+        }
+    }
+}
+
 struct Artwork: Identifiable, Hashable {
     let id = UUID()
     let name: String
