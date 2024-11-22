@@ -8,16 +8,18 @@
 import SwiftUI
 import RealityKit
 import ARKit
+import Combine
 
 
 struct ContentView: View {
     @State private var showSettings = false
     @State private var selectedArtwork: Artwork? = nil // Hinzugefügt
+    @StateObject private var arManager = ARManager()
     
     var body: some View {
         ZStack {
             // ARViewContainer nimmt den gesamten Hintergrund ein
-            ARViewContainer(selectedArtwork: $selectedArtwork)
+            ARViewContainer(selectedArtwork: $selectedArtwork, arManager: arManager)
                 .edgesIgnoringSafeArea(.all)
             
             // Zahnrad-Button oben rechts
@@ -25,6 +27,21 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     
+                    // Rotations-Button
+                    Button(action: {
+                        arManager.rotateArtwork()
+                    }) {
+                        Image(systemName: "rotate.right")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .padding()
+                            .background(Color.white.opacity(0.7))
+                            .clipShape(Circle())
+                            .shadow(radius: 5)
+                    }
+                    .padding([.top, .trailing], 20)
+                    
+                    // Zahnrad-Button
                     Button(action: {
                         // Aktion beim Tippen auf den Zahnrad-Button
                         print("Zahnrad-Button wurde gedrückt")
@@ -51,6 +68,7 @@ struct ContentView: View {
 
 struct ARViewContainer: UIViewRepresentable {
     @Binding var selectedArtwork: Artwork?
+    @ObservedObject var arManager: ARManager
     
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
@@ -70,15 +88,24 @@ struct ARViewContainer: UIViewRepresentable {
     func updateUIView(_ uiView: ARView, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(selectedArtwork: $selectedArtwork)
+        Coordinator(selectedArtwork: $selectedArtwork, arManager: arManager)
     }
     
     class Coordinator: NSObject {
         @Binding var selectedArtwork: Artwork?
         var currentAnchor: AnchorEntity?
+        var cancellables: Set<AnyCancellable> = []
         
-        init(selectedArtwork: Binding<Artwork?>) {
+        init(selectedArtwork: Binding<Artwork?>, arManager: ARManager) {
             _selectedArtwork = selectedArtwork
+            super.init()
+            
+            // Abonnieren des Rotate-Events
+            arManager.rotateArtworkSubject
+                .sink { [weak self] in
+                    self?.rotateArtwork()
+                }
+                .store(in: &cancellables)
         }
         
         @objc func handleTap(sender: UITapGestureRecognizer) {
@@ -135,6 +162,37 @@ struct ARViewContainer: UIViewRepresentable {
                 currentAnchor = anchor
             }
         }
+        
+        func rotateArtwork() {
+            guard let anchor = currentAnchor else {
+                print("Kein Anker vorhanden, nichts zu drehen.")
+                return
+            }
+            guard let plane = anchor.children.first as? ModelEntity else {
+                print("Kein Plane-Entity gefunden.")
+                return
+            }
+            
+            // Aktuelle Rotation speichern
+            let currentRotation = plane.transform.rotation
+            
+            // Neue Rotation um 90 Grad hinzufügen
+            let rotation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0]) // 90 Grad um Y-Achse
+            plane.transform.rotation = rotation * currentRotation
+            
+            print("Kunstwerk wurde um 90 Grad gedreht.")
+        }
+    }
+}
+
+// ARManager zur Verwaltung von AR-Aktionen
+class ARManager: ObservableObject {
+    // Publisher, der jedes Mal ein Ereignis sendet, wenn eine Drehung ausgelöst wird
+    let rotateArtworkSubject = PassthroughSubject<Void, Never>()
+    
+    // Methode zum Auslösen der Drehung
+    func rotateArtwork() {
+        rotateArtworkSubject.send()
     }
 }
 
@@ -145,24 +203,26 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationView {
-            List(selection: $selectedArtwork) {
-                ForEach(artworks) { artwork in
-                    HStack {
-                        Text(artwork.name)
-                        Spacer()
-                        Text("\(String(format: "%.2f", artwork.width))cm x \(String(format: "%.2f", artwork.height))cm")
-                            .foregroundColor(.gray)
-                            .font(.subheadline)
-                    }
-                    .contentShape(Rectangle())
-                    .background(selectedArtwork == artwork ? Color.blue.opacity(0.2) : Color.clear)
-                    .cornerRadius(8)
-                    .onTapGesture {
-                        selectedArtwork = artwork
-                        dismiss()
-                    }
+            List(artworks) { artwork in
+                HStack {
+                    Text(artwork.name)
+                        .font(.headline)
+                        .foregroundColor(selectedArtwork == artwork ? .blue : .primary)
+                    Spacer()
+                    // Gerundete Anzeige der Maße
+                    Text("\(String(format: "%.2f", artwork.width))cm x \(String(format: "%.2f", artwork.height))cm")
+                        .foregroundColor(.gray)
+                        .font(.subheadline)
+                }
+                .contentShape(Rectangle())
+                .background(selectedArtwork == artwork ? Color.blue.opacity(0.2) : Color.clear)
+                .cornerRadius(8)
+                .onTapGesture {
+                    selectedArtwork = artwork
+                    dismiss()
                 }
             }
+            .listStyle(PlainListStyle())
             .navigationTitle("Wähle ein Kunstwerk")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -191,7 +251,7 @@ let artworks = [
 //    Artwork(name: "Beach", width: 100, height: 50),
 //    Artwork(name: "Magic Lamp", width: 120, height: 40),
 //    Artwork(name: "Golden Waves", width: 100, height: 50),
-//    Artwork(name: "Earth", width: 100, height: 50),
+    Artwork(name: "Earth", width: 120, height: 40),
 //    Artwork(name: "Gilded Fold", width: 100, height: 50),
 //    Artwork(name: "Blue Lagoon", width: 100, height: 50),
 //    Artwork(name: "Pacific", width: 100, height: 50),
