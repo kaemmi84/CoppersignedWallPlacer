@@ -12,11 +12,12 @@ import ARKit
 
 struct ContentView: View {
     @State private var showSettings = false
+    @State private var selectedArtwork: Artwork? = nil // Hinzugefügt
     
     var body: some View {
         ZStack {
             // ARViewContainer nimmt den gesamten Hintergrund ein
-            ARViewContainer()
+            ARViewContainer(selectedArtwork: $selectedArtwork)
                 .edgesIgnoringSafeArea(.all)
             
             // Zahnrad-Button oben rechts
@@ -39,7 +40,7 @@ struct ContentView: View {
                     }
                     .padding([.top, .trailing], 20)
                     .sheet(isPresented: $showSettings) {
-                        SettingsView()
+                        SettingsView(selectedArtwork: $selectedArtwork)
                     }
                 }
                 Spacer()
@@ -49,6 +50,8 @@ struct ContentView: View {
 }
 
 struct ARViewContainer: UIViewRepresentable {
+    @Binding var selectedArtwork: Artwork?
+    
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
         
@@ -67,16 +70,26 @@ struct ARViewContainer: UIViewRepresentable {
     func updateUIView(_ uiView: ARView, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(selectedArtwork: $selectedArtwork)
     }
     
     class Coordinator: NSObject {
-        // Eigenschaft zum Speichern des aktuellen Ankers
+        @Binding var selectedArtwork: Artwork?
         var currentAnchor: AnchorEntity?
+        
+        init(selectedArtwork: Binding<Artwork?>) {
+            _selectedArtwork = selectedArtwork
+        }
         
         @objc func handleTap(sender: UITapGestureRecognizer) {
             guard let arView = sender.view as? ARView else { return }
             let tapLocation = sender.location(in: arView)
+            
+            // Sicherstellen, dass ein Kunstwerk ausgewählt ist
+            guard let artwork = selectedArtwork else {
+                print("Kein Kunstwerk ausgewählt")
+                return
+            }
             
             // Raycast durchführen
             if let result = arView.raycast(from: tapLocation, allowing: .estimatedPlane, alignment: .vertical).first {
@@ -92,18 +105,23 @@ struct ARViewContainer: UIViewRepresentable {
                 
                 // Bild als Material laden
                 var material = UnlitMaterial()
-                material.color = try! .init(tint: .white, texture: .init(.load(named: "Cyclone")))
+                do {
+                    let texture = try TextureResource.load(named: artwork.name)
+                    material.color = .init(tint: .white, texture: .init(texture))
+                } catch {
+                    print("Fehler beim Laden der Textur: \(error)")
+                    return
+                }
                 
                 // Maße von Zentimetern in Meter umrechnen
-                let widthInMeters: Float = 115 / 100
-                let heightInMeters: Float = 80 / 100
+                let widthInMeters: Float = Float(artwork.width) / 100
+                let heightInMeters: Float = Float(artwork.height) / 100
                 
                 // Plane mit Bild erstellen
                 let plane = ModelEntity(mesh: .generatePlane(width: Float(widthInMeters), height: Float(heightInMeters)), materials: [material])
                                 
                 
-                // Plane mit Bild erstellen
-//                let plane = ModelEntity(mesh: .generatePlane(width: 0.5, height: 0.5), materials: [material])
+                // Plane rotieren, um korrekt an der Wand auszurichten
                 plane.transform.rotation = simd_quatf(angle: -.pi / 2, axis: [1, 0, 0])
                 
                 // Plane zum Anker hinzufügen
@@ -123,22 +141,36 @@ struct ARViewContainer: UIViewRepresentable {
 struct SettingsView: View {
     // Zugriff auf die Präsentationsumgebung
     @Environment(\.dismiss) private var dismiss
+    @Binding var selectedArtwork: Artwork?
 
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Einstellungen")
-                    .font(.largeTitle)
-                    .padding()
-                
-                // Füge hier deine Einstellungsoptionen hinzu
-                
-                Spacer()
+            List(selection: $selectedArtwork) {
+                ForEach(artworks) { artwork in
+                    HStack {
+                        Text(artwork.name)
+                        Spacer()
+                        Text("\(String(format: "%.2f", artwork.width))cm x \(String(format: "%.2f", artwork.height))cm")
+                            .foregroundColor(.gray)
+                            .font(.subheadline)
+                    }
+                    .contentShape(Rectangle())
+                    .background(selectedArtwork == artwork ? Color.blue.opacity(0.2) : Color.clear)
+                    .cornerRadius(8)
+                    .onTapGesture {
+                        selectedArtwork = artwork
+                        dismiss()
+                    }
+                }
             }
-            .navigationBarItems(trailing: Button("Schließen") {
-                // Logik zum Schließen der Ansicht
-                dismiss()
-            })
+            .navigationTitle("Wähle ein Kunstwerk")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Schließen") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
@@ -154,7 +186,7 @@ let artworks = [
 //    Artwork(name: "Mermaid Home", width: 100, height: 50),
 //    Artwork(name: "Jungle Fever", width: 100, height: 50),
 //    Artwork(name: "Self Blooming", width: 100, height: 50),
-//    Artwork(name: "Fire", width: 120, height: 40),
+    Artwork(name: "Fire", width: 40, height: 120),
 //    Artwork(name: "Sleeping Muse", width: 100, height: 50),
 //    Artwork(name: "Beach", width: 100, height: 50),
 //    Artwork(name: "Magic Lamp", width: 120, height: 40),
