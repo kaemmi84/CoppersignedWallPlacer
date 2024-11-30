@@ -211,14 +211,25 @@ struct SettingsView: View {
         NavigationView {
             List(artworks) { artwork in
                 HStack {
-                    Text(artwork.name)
-                        .font(.headline)
-                        .foregroundColor(selectedArtwork == artwork ? .blue : .primary)
+                    // Vorschaubild des Kunstwerks
+                    Image(artwork.name)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(8)
+                        .padding(.trailing, 8)
+                    
+                    VStack(alignment: .leading) {
+                        Text(artwork.name)
+                            .font(.headline)
+                            .foregroundColor(selectedArtwork == artwork ? .blue : .primary)
+                        // Anzeige der Maße
+                        Text("\(String(format: "%.0f", artwork.width))cm x \(String(format: "%.0f", artwork.height))cm")
+                            .foregroundColor(.gray)
+                            .font(.subheadline)
+                    }
+                    
                     Spacer()
-                    // Gerundete Anzeige der Maße
-                    Text("\(String(format: "%.0f", artwork.width))cm x \(String(format: "%.0f", artwork.height))cm")
-                        .foregroundColor(.gray)
-                        .font(.subheadline)
                 }
                 .contentShape(Rectangle())
                 .background(selectedArtwork == artwork ? Color.blue.opacity(0.2) : Color.clear)
@@ -256,7 +267,7 @@ let artworks = [
 //    Artwork(name: "Sleeping Muse", width: 100, height: 50),
 //    Artwork(name: "Beach", width: 100, height: 50),
     Artwork(name: "Magic Lamp", width: 110, height: 80),
-    Artwork(name: "Golden Waves", width: 120, height: 40),
+    Artwork(name: "Golden waves", width: 40, height: 120),
     Artwork(name: "Earth", width: 120, height: 40),
     Artwork(name: "Gilded Fold", width: 50, height: 50),
 //    Artwork(name: "Blue Lagoon", width: 100, height: 50),
