@@ -130,14 +130,20 @@ struct ARViewContainer: UIViewRepresentable {
                 // Anker erstellen
                 let anchor = AnchorEntity(world: result.worldTransform)
                 
-                // Bild als Material laden
                 var material = UnlitMaterial()
+                // Bild als Texturressource laden
                 do {
                     let texture = try TextureResource.load(named: artwork.name)
+                    
+                    // UnlitMaterial mit der geladenen Textur erstellen
+            
                     material.color = .init(tint: .white, texture: .init(texture))
+                    
+                    // Blending-Modus auf transparent setzen, um Transparenz zu unterstützen
+                    material.blending = .transparent(opacity: .init(scale: 1.0))
+                    
                 } catch {
                     print("Fehler beim Laden der Textur: \(error)")
-                    return
                 }
                 
                 // Maße von Zentimetern in Meter umrechnen
@@ -210,7 +216,7 @@ struct SettingsView: View {
                         .foregroundColor(selectedArtwork == artwork ? .blue : .primary)
                     Spacer()
                     // Gerundete Anzeige der Maße
-                    Text("\(String(format: "%.2f", artwork.width))cm x \(String(format: "%.2f", artwork.height))cm")
+                    Text("\(String(format: "%.0f", artwork.width))cm x \(String(format: "%.0f", artwork.height))cm")
                         .foregroundColor(.gray)
                         .font(.subheadline)
                 }
@@ -244,15 +250,15 @@ struct Artwork: Identifiable, Hashable {
 
 let artworks = [
 //    Artwork(name: "Mermaid Home", width: 100, height: 50),
-//    Artwork(name: "Jungle Fever", width: 100, height: 50),
-//    Artwork(name: "Self Blooming", width: 100, height: 50),
+    Artwork(name: "Jungle Fever", width: 120, height: 80),
+    Artwork(name: "Self Blooming", width: 40, height: 120),
     Artwork(name: "Fire", width: 40, height: 120),
 //    Artwork(name: "Sleeping Muse", width: 100, height: 50),
 //    Artwork(name: "Beach", width: 100, height: 50),
-//    Artwork(name: "Magic Lamp", width: 120, height: 40),
-//    Artwork(name: "Golden Waves", width: 100, height: 50),
+    Artwork(name: "Magic Lamp", width: 110, height: 80),
+    Artwork(name: "Golden Waves", width: 120, height: 40),
     Artwork(name: "Earth", width: 120, height: 40),
-//    Artwork(name: "Gilded Fold", width: 100, height: 50),
+    Artwork(name: "Gilded Fold", width: 50, height: 50),
 //    Artwork(name: "Blue Lagoon", width: 100, height: 50),
 //    Artwork(name: "Pacific", width: 100, height: 50),
 //    Artwork(name: "Whispering Forest", width: 100, height: 50),
