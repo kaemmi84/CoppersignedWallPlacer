@@ -29,9 +29,22 @@
 		F9EA656A2CE567AF006DE199 /* CoppersignedWallPlacerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoppersignedWallPlacerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F98B6FA52CFBC5E7009839AF /* Exceptions for "CoppersignedWallPlacer" folder in "CoppersignedWallPlacer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F9EA654F2CE567AD006DE199 /* CoppersignedWallPlacer */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F9EA65522CE567AD006DE199 /* CoppersignedWallPlacer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F98B6FA52CFBC5E7009839AF /* Exceptions for "CoppersignedWallPlacer" folder in "CoppersignedWallPlacer" target */,
+			);
 			path = CoppersignedWallPlacer;
 			sourceTree = "<group>";
 		};
@@ -399,10 +412,10 @@
 				DEVELOPMENT_TEAM = NEHG8Z8422;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CoppersignedWallPlacer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Coppersigned Artwork";
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arkit;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -431,10 +444,10 @@
 				DEVELOPMENT_TEAM = NEHG8Z8422;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CoppersignedWallPlacer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Coppersigned Artwork";
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arkit;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
