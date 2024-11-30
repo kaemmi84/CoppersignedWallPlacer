@@ -13,7 +13,7 @@ import Combine
 
 struct ContentView: View {
     @State private var showSettings = false
-    @State private var selectedArtwork: Artwork? = nil // Hinzugefügt
+    @State private var selectedArtwork: Artwork? = artworks.first(where: {aw in aw.name == "Cyclone"})
     @StateObject private var arManager = ARManager()
     
     var body: some View {
@@ -39,6 +39,7 @@ struct ContentView: View {
                             .clipShape(Circle())
                             .shadow(radius: 5)
                     }
+                    .tint(Color("AccentColor"))
                     .padding([.top, .trailing], 20)
                     
                     // Zahnrad-Button
@@ -55,6 +56,7 @@ struct ContentView: View {
                             .clipShape(Circle())
                             .shadow(radius: 5)
                     }
+                    .tint(Color("AccentColor"))
                     .padding([.top, .trailing], 20)
                     .sheet(isPresented: $showSettings) {
                         SettingsView(selectedArtwork: $selectedArtwork)
@@ -136,7 +138,7 @@ struct ARViewContainer: UIViewRepresentable {
                     let texture = try TextureResource.load(named: artwork.name)
                     
                     // UnlitMaterial mit der geladenen Textur erstellen
-            
+                    
                     material.color = .init(tint: .white, texture: .init(texture))
                     
                     // Blending-Modus auf transparent setzen, um Transparenz zu unterstützen
@@ -152,7 +154,7 @@ struct ARViewContainer: UIViewRepresentable {
                 
                 // Plane mit Bild erstellen
                 let plane = ModelEntity(mesh: .generatePlane(width: Float(widthInMeters), height: Float(heightInMeters)), materials: [material])
-                                
+                
                 
                 // Plane rotieren, um korrekt an der Wand auszurichten
                 plane.transform.rotation = simd_quatf(angle: -.pi / 2, axis: [1, 0, 0])
@@ -206,40 +208,47 @@ struct SettingsView: View {
     // Zugriff auf die Präsentationsumgebung
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedArtwork: Artwork?
-
+    
     var body: some View {
         NavigationView {
-            List(artworks) { artwork in
-                HStack {
-                    // Vorschaubild des Kunstwerks
-                    Image(artwork.name)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .cornerRadius(8)
-                        .padding(.trailing, 8)
-                    
-                    VStack(alignment: .leading) {
-                        Text(artwork.name)
-                            .font(.headline)
-                            .foregroundColor(selectedArtwork == artwork ? .blue : .primary)
-                        // Anzeige der Maße
-                        Text("\(String(format: "%.0f", artwork.width))cm x \(String(format: "%.0f", artwork.height))cm")
-                            .foregroundColor(.gray)
-                            .font(.subheadline)
+            VStack {
+                List(artworks) { artwork in
+                    HStack {
+                        // Vorschaubild des Kunstwerks
+                        Image(artwork.name)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .cornerRadius(8)
+                            .padding(.trailing, 8)
+                        
+                        VStack(alignment: .leading) {
+                            Text(artwork.name)
+                                .font(.headline)
+                                .foregroundColor(selectedArtwork == artwork ? .white : .primary)
+                            // Anzeige der Maße
+                            Text("\(String(format: "%.0f", artwork.width))cm x \(String(format: "%.0f", artwork.height))cm")
+                                .foregroundColor(.gray)
+                                .font(.subheadline)
+                        }
+                        
+                        Spacer()
                     }
-                    
-                    Spacer()
+                    .contentShape(Rectangle())
+                    .background(selectedArtwork == artwork ? Color("AccentColor") : Color.clear)
+                    .cornerRadius(8)
+                    .onTapGesture {
+                        selectedArtwork = artwork
+                        dismiss()
+                    }
                 }
-                .contentShape(Rectangle())
-                .background(selectedArtwork == artwork ? Color.blue.opacity(0.2) : Color.clear)
-                .cornerRadius(8)
-                .onTapGesture {
-                    selectedArtwork = artwork
-                    dismiss()
-                }
+                .listStyle(PlainListStyle())
+                
+                // Link zu Coppersigned.com
+                Link("Besuchen Sie Coppersigned.com", destination: URL(string: "https://coppersigned.com")!)
+                    .font(.headline)
+                    .padding()
             }
-            .listStyle(PlainListStyle())
             .navigationTitle("Wähle ein Kunstwerk")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -260,33 +269,33 @@ struct Artwork: Identifiable, Hashable {
 }
 
 let artworks = [
-//    Artwork(name: "Mermaid Home", width: 100, height: 50),
+    //    Artwork(name: "Mermaid Home", width: 100, height: 50),
     Artwork(name: "Jungle Fever", width: 120, height: 80),
     Artwork(name: "Self Blooming", width: 40, height: 120),
     Artwork(name: "Fire", width: 40, height: 120),
-//    Artwork(name: "Sleeping Muse", width: 100, height: 50),
-//    Artwork(name: "Beach", width: 100, height: 50),
+    //    Artwork(name: "Sleeping Muse", width: 100, height: 50),
+    //    Artwork(name: "Beach", width: 100, height: 50),
     Artwork(name: "Magic Lamp", width: 110, height: 80),
     Artwork(name: "Golden waves", width: 40, height: 120),
     Artwork(name: "Earth", width: 120, height: 40),
     Artwork(name: "Gilded Fold", width: 50, height: 50),
-//    Artwork(name: "Blue Lagoon", width: 100, height: 50),
-//    Artwork(name: "Pacific", width: 100, height: 50),
-//    Artwork(name: "Whispering Forest", width: 100, height: 50),
-//    Artwork(name: "Northern Lite", width: 100, height: 50),
-//    Artwork(name: "Lightning", width: 100, height: 50),
-//    Artwork(name: "Sea & Sand", width: 100, height: 50),
-//    Artwork(name: "Bali", width: 100, height: 50),
-//    Artwork(name: "Kintsugi", width: 100, height: 50),
+    //    Artwork(name: "Blue Lagoon", width: 100, height: 50),
+    //    Artwork(name: "Pacific", width: 100, height: 50),
+    //    Artwork(name: "Whispering Forest", width: 100, height: 50),
+    //    Artwork(name: "Northern Lite", width: 100, height: 50),
+    //    Artwork(name: "Lightning", width: 100, height: 50),
+    //    Artwork(name: "Sea & Sand", width: 100, height: 50),
+    //    Artwork(name: "Bali", width: 100, height: 50),
+    //    Artwork(name: "Kintsugi", width: 100, height: 50),
     Artwork(name: "Cyclone", width: 115, height: 80),
-//    Artwork(name: "Oxided Copper", width: 100, height: 50),
-//    Artwork(name: "Future Planet", width: 100, height: 50),
-//    Artwork(name: "Portugal Immersion", width: 100, height: 50),
-//    Artwork(name: "Unicorn", width: 100, height: 50),
-//    Artwork(name: "Wood meets Steel", width: 100, height: 50),
-//    Artwork(name: "Earthquake", width: 100, height: 50),
-//    Artwork(name: "Golden Confidence", width: 100, height: 50),
-//    Artwork(name: "Supernova", width: 100, height: 50)
+    //    Artwork(name: "Oxided Copper", width: 100, height: 50),
+    //    Artwork(name: "Future Planet", width: 100, height: 50),
+    //    Artwork(name: "Portugal Immersion", width: 100, height: 50),
+    //    Artwork(name: "Unicorn", width: 100, height: 50),
+    //    Artwork(name: "Wood meets Steel", width: 100, height: 50),
+    //    Artwork(name: "Earthquake", width: 100, height: 50),
+    //    Artwork(name: "Golden Confidence", width: 100, height: 50),
+    //    Artwork(name: "Supernova", width: 100, height: 50)
 ]
 
 #Preview {
