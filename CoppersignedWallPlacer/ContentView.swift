@@ -10,17 +10,40 @@ import RealityKit
 import ARKit
 import Combine
 
+func deviceHasLiDAR() -> Bool {
+    return ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
+}
+
+class CustomARView: ARView, ARCoachingOverlayViewDelegate {
+    func setupCoachingOverlay() {
+        let coachingOverlay = ARCoachingOverlayView()
+        coachingOverlay.delegate = self
+        coachingOverlay.session = self.session
+        coachingOverlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        coachingOverlay.goal = .horizontalPlane
+        coachingOverlay.activatesAutomatically = true
+        self.addSubview(coachingOverlay)
+    }
+}
 
 struct ContentView: View {
     @State private var showSettings = false
     @State private var selectedArtwork: Artwork? = artworks.first(where: {aw in aw.name == "Cyclone"})
     @StateObject private var arManager = ARManager()
+    @State private var showLiDARAlert = false
     
     var body: some View {
         ZStack {
             // ARViewContainer nimmt den gesamten Hintergrund ein
-            ARViewContainer(selectedArtwork: $selectedArtwork, arManager: arManager)
+            ARViewContainer(selectedArtwork: $selectedArtwork, arManager: arManager, showLiDARAlert: $showLiDARAlert)
                 .edgesIgnoringSafeArea(.all)
+                .alert(isPresented: $showLiDARAlert) {
+                    Alert(
+                        title: Text("Hinweis"),
+                        message: Text("Für beste Ergebnisse wird ein Gerät mit LiDAR-Sensor empfohlen."),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
             
             // Zahnrad-Button oben rechts
             VStack {
@@ -71,9 +94,17 @@ struct ContentView: View {
 struct ARViewContainer: UIViewRepresentable {
     @Binding var selectedArtwork: Artwork?
     @ObservedObject var arManager: ARManager
+    @Binding var showLiDARAlert: Bool
     
     func makeUIView(context: Context) -> ARView {
-        let arView = ARView(frame: .zero)
+        let arView = CustomARView(frame: .zero)
+        
+        if !deviceHasLiDAR() {
+            arView.setupCoachingOverlay()
+            DispatchQueue.main.async {
+                showLiDARAlert = true
+            }
+        }
         
         // AR-Session konfigurieren
         let configuration = ARWorldTrackingConfiguration()
