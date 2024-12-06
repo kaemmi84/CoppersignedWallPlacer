@@ -20,7 +20,8 @@ class CustomARView: ARView, ARCoachingOverlayViewDelegate {
         coachingOverlay.delegate = self
         coachingOverlay.session = self.session
         coachingOverlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        coachingOverlay.goal = .horizontalPlane
+        // Goal set to anyPlane to guide the user in detecting planes
+        coachingOverlay.goal = .anyPlane
         coachingOverlay.activatesAutomatically = true
         self.addSubview(coachingOverlay)
     }
@@ -34,10 +35,11 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // ARViewContainer nimmt den gesamten Hintergrund ein
+            // ARViewContainer takes up the entire background
             ARViewContainer(selectedArtwork: $selectedArtwork, arManager: arManager, showLiDARAlert: $showLiDARAlert)
                 .edgesIgnoringSafeArea(.all)
                 .alert(isPresented: $showLiDARAlert) {
+                    // Keep UI strings in German
                     Alert(
                         title: Text("Hinweis"),
                         message: Text("Für beste Ergebnisse wird ein Gerät mit LiDAR-Sensor empfohlen."),
@@ -45,12 +47,12 @@ struct ContentView: View {
                     )
                 }
             
-            // Zahnrad-Button oben rechts
+            // Gear button at the top right
             VStack {
                 HStack {
                     Spacer()
                     
-                    // Rotations-Button
+                    // Rotation button
                     Button(action: {
                         arManager.rotateArtwork()
                     }) {
@@ -65,10 +67,10 @@ struct ContentView: View {
                     .tint(Color("AccentColor"))
                     .padding([.top, .trailing], 20)
                     
-                    // Zahnrad-Button
+                    // Gear button
                     Button(action: {
-                        // Aktion beim Tippen auf den Zahnrad-Button
-                        print("Zahnrad-Button wurde gedrückt")
+                        // Action when tapping the gear button
+                        print("Gear button pressed")
                         showSettings.toggle()
                     }) {
                         Image(systemName: "gearshape.fill")
@@ -106,12 +108,12 @@ struct ARViewContainer: UIViewRepresentable {
             }
         }
         
-        // AR-Session konfigurieren
+        // Configure AR session
         let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = [.vertical]
+        configuration.planeDetection = [.horizontal, .vertical]
         arView.session.run(configuration)
         
-        // Tap-Geste hinzufügen
+        // Add tap gesture
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
         arView.addGestureRecognizer(tapGesture)
         
@@ -133,7 +135,7 @@ struct ARViewContainer: UIViewRepresentable {
             _selectedArtwork = selectedArtwork
             super.init()
             
-            // Abonnieren des Rotate-Events
+            // Subscribe to the rotate event
             arManager.rotateArtworkSubject
                 .sink { [weak self] in
                     self?.rotateArtwork()
@@ -145,107 +147,138 @@ struct ARViewContainer: UIViewRepresentable {
             guard let arView = sender.view as? ARView else { return }
             let tapLocation = sender.location(in: arView)
             
-            // Sicherstellen, dass ein Kunstwerk ausgewählt ist
+            // Ensure that an artwork is selected
             guard let artwork = selectedArtwork else {
-                print("Kein Kunstwerk ausgewählt")
+                print("No artwork selected")
                 return
             }
             
-            // Raycast durchführen
-            if let result = arView.raycast(from: tapLocation, allowing: .estimatedPlane, alignment: .vertical).first {
+            // 1. Try to find an existing vertical plane
+            if let verticalPlane = arView.raycast(
+                from: tapLocation,
+                allowing: .existingPlaneGeometry,
+                alignment: .vertical
+            ).first {
                 
-                // Vorheriges Anker-Entity entfernen, falls vorhanden
-                if let existingAnchor = currentAnchor {
-                    arView.scene.removeAnchor(existingAnchor)
-                    currentAnchor = nil
-                }
+                placeArtwork(arView: arView, transform: verticalPlane.worldTransform, artwork: artwork, rotateForWall: true)
                 
-                // Anker erstellen
-                let anchor = AnchorEntity(world: result.worldTransform)
+            // 2. If no existing vertical plane found, try an estimated vertical plane
+            } else if let verticalEstimate = arView.raycast(
+                from: tapLocation,
+                allowing: .estimatedPlane,
+                alignment: .vertical
+            ).first {
                 
-                var material = UnlitMaterial()
-                // Bild als Texturressource laden
-                do {
-                    let texture = try TextureResource.load(named: artwork.name)
-                    
-                    // UnlitMaterial mit der geladenen Textur erstellen
-                    
-                    material.color = .init(tint: .white, texture: .init(texture))
-                    
-                    // Blending-Modus auf transparent setzen, um Transparenz zu unterstützen
-                    material.blending = .transparent(opacity: .init(scale: 1.0))
-                    
-                } catch {
-                    print("Fehler beim Laden der Textur: \(error)")
-                }
+                placeArtwork(arView: arView, transform: verticalEstimate.worldTransform, artwork: artwork, rotateForWall: true)
                 
-                // Maße von Zentimetern in Meter umrechnen
-                let widthInMeters: Float = Float(artwork.width) / 100
-                let heightInMeters: Float = Float(artwork.height) / 100
+            // 3. If that doesn't work either, fallback to a horizontal plane
+            } else if let horizontalPlane = arView.raycast(
+                from: tapLocation,
+                allowing: .existingPlaneGeometry,
+                alignment: .horizontal
+            ).first {
                 
-                // Plane mit Bild erstellen
-                let plane = ModelEntity(mesh: .generatePlane(width: Float(widthInMeters), height: Float(heightInMeters)), materials: [material])
+                placeArtwork(arView: arView, transform: horizontalPlane.worldTransform, artwork: artwork, rotateForWall: false)
                 
-                
-                // Plane rotieren, um korrekt an der Wand auszurichten
-                plane.transform.rotation = simd_quatf(angle: -.pi / 2, axis: [1, 0, 0])
-                
-                // Plane zum Anker hinzufügen
-                anchor.addChild(plane)
-                
-                // Anker zur Szene hinzufügen
-                arView.scene.addAnchor(anchor)
-                
-                
-                // Aktuelles Anker-Entity aktualisieren
-                currentAnchor = anchor
+            } else {
+                print("No suitable plane found. Please move the device to detect surfaces.")
             }
+        }
+
+        func placeArtwork(arView: ARView, transform: simd_float4x4, artwork: Artwork, rotateForWall: Bool) {
+            // Remove the previous anchor entity if present
+            if let existingAnchor = currentAnchor {
+                arView.scene.removeAnchor(existingAnchor)
+                currentAnchor = nil
+            }
+            
+            // Create anchor
+            let anchor = AnchorEntity(world: transform)
+            
+            var material = UnlitMaterial()
+            // Load the image as a texture resource
+            do {
+                let texture = try TextureResource.load(named: artwork.name)
+                
+                material.color = .init(tint: .white, texture: .init(texture))
+                material.blending = .transparent(opacity: .init(scale: 1.0))
+                
+            } catch {
+                print("Error loading texture: \(error)")
+            }
+            
+            // Convert centimeters to meters
+            let widthInMeters: Float = Float(artwork.width) / 100
+            let heightInMeters: Float = Float(artwork.height) / 100
+            
+            // Create plane with the image
+            let plane = ModelEntity(
+                mesh: .generatePlane(width: Float(widthInMeters), height: Float(heightInMeters)),
+                materials: [material]
+            )
+            
+            if rotateForWall {
+                // For walls: set the plane upright
+                plane.transform.rotation = simd_quatf(angle: -.pi / 2, axis: [1, 0, 0])
+            } else {
+                // For floor/table: no additional rotation needed
+            }
+            
+            // Add plane to anchor
+            anchor.addChild(plane)
+            
+            // Add anchor to the scene
+            arView.scene.addAnchor(anchor)
+            
+            // Update current anchor entity
+            currentAnchor = anchor
         }
         
         func rotateArtwork() {
             guard let anchor = currentAnchor else {
-                print("Kein Anker vorhanden, nichts zu drehen.")
+                print("No anchor present, nothing to rotate.")
                 return
             }
             guard let plane = anchor.children.first as? ModelEntity else {
-                print("Kein Plane-Entity gefunden.")
+                print("No plane entity found.")
                 return
             }
             
-            // Aktuelle Rotation speichern
+            // Save current rotation
             let currentRotation = plane.transform.rotation
             
-            // Neue Rotation um 90 Grad hinzufügen
-            let rotation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0]) // 90 Grad um Y-Achse
+            // Add a 90-degree rotation
+            let rotation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0]) // 90 degrees around Y-axis
             plane.transform.rotation = rotation * currentRotation
             
-            print("Kunstwerk wurde um 90 Grad gedreht.")
+            print("Artwork rotated by 90 degrees.")
         }
     }
 }
 
-// ARManager zur Verwaltung von AR-Aktionen
+// ARManager to manage AR actions
 class ARManager: ObservableObject {
-    // Publisher, der jedes Mal ein Ereignis sendet, wenn eine Drehung ausgelöst wird
+    // Publisher that sends an event each time a rotation is triggered
     let rotateArtworkSubject = PassthroughSubject<Void, Never>()
     
-    // Methode zum Auslösen der Drehung
+    // Method to trigger rotation
     func rotateArtwork() {
         rotateArtworkSubject.send()
     }
 }
 
 struct SettingsView: View {
-    // Zugriff auf die Präsentationsumgebung
+    // Access to the presentation environment
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedArtwork: Artwork?
     
     var body: some View {
         NavigationView {
             VStack {
+                // Keep UI elements in German
                 List(artworks) { artwork in
                     HStack {
-                        // Vorschaubild des Kunstwerks
+                        // Preview image of the artwork
                         Image(artwork.name)
                             .resizable()
                             .scaledToFit()
@@ -257,7 +290,7 @@ struct SettingsView: View {
                             Text(artwork.name)
                                 .font(.headline)
                                 .foregroundColor(selectedArtwork == artwork ? .white : .primary)
-                            // Anzeige der Maße
+                            // Display dimensions
                             Text("\(String(format: "%.0f", artwork.width))cm x \(String(format: "%.0f", artwork.height))cm")
                                 .foregroundColor(.gray)
                                 .font(.subheadline)
@@ -275,7 +308,7 @@ struct SettingsView: View {
                 }
                 .listStyle(PlainListStyle())
                 
-                // Link zu Coppersigned.com
+                // Link to Coppersigned.com (UI remains in German)
                 Link("Besuchen Sie Coppersigned.com", destination: URL(string: "https://coppersigned.com")!)
                     .font(.headline)
                     .padding()
@@ -295,8 +328,8 @@ struct SettingsView: View {
 struct Artwork: Identifiable, Hashable {
     let id = UUID()
     let name: String
-    let width: CGFloat // in Zentimetern
-    let height: CGFloat // in Zentimetern
+    let width: CGFloat // in centimeters
+    let height: CGFloat // in centimeters
 }
 
 let artworks = [
