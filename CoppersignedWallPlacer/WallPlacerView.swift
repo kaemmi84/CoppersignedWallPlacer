@@ -27,7 +27,7 @@ class CustomARView: ARView, ARCoachingOverlayViewDelegate {
     }
 }
 
-struct RootView: View {
+struct ContentView: View {
     var body: some View {
         NavigationView {
             ArtworkListView()
@@ -38,22 +38,29 @@ struct RootView: View {
 
 struct ArtworkListView: View {
     var body: some View {
-        List(artworks) { artwork in
-            NavigationLink(destination: ArtworkDetailView(artwork: artwork)) {
-                HStack {
-                    Image(artwork.name)
-                        .resizable()
-                    //                        .scaledToFit()
-                        .scaledToFill()
-                        .frame(width: 50, height: 50)
-                        .cornerRadius(8)
-                    
-                    Text(artwork.name)
-                        .font(.headline)
+        VStack {
+            List(artworks) { artwork in
+                NavigationLink(destination: ArtworkDetailView(artwork: artwork)) {
+                    HStack {
+                        Image(artwork.name)
+                            .resizable()
+                        //                        .scaledToFit()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .cornerRadius(8)
+                        
+                        Text(artwork.name)
+                            .font(.headline)
+                    }
                 }
             }
+            .listStyle(PlainListStyle())
+            
+            
+            Link("Besuchen Sie Coppersigned.com", destination: URL(string: "https://coppersigned.com")!)
+                .font(.headline)
+                .padding()
         }
-        .listStyle(PlainListStyle())
     }
 }
 
@@ -62,47 +69,26 @@ struct ArtworkDetailView: View {
     @State private var showARView = false
     
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            VStack(spacing: 20) {
-                Spacer()
-                Image(artwork.name)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                Spacer()
-                
-                //            Text("\(artwork.name)")
-                //                .font(.title)
-                //
-                //            Text("\(Int(artwork.width))cm x \(Int(artwork.height))cm")
-                //                .foregroundColor(.gray)
-            }
-            .navigationTitle(artwork.name)
-            .sheet(isPresented: $showARView) {
-                WallPlacerView(selectedArtwork: artwork) // Angepasster Init in ContentView
-            }
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        showARView = true
-                    }) {
-                        Text("Im Raum ansehen")
-                            .font(.headline)
-                            .foregroundColor(Color.accentColor)
-                            .padding()
-                            .background(.white)
-                            .cornerRadius(8)
-                    }
-                    .padding()
-                    
-                    Spacer()
-                }
-            }
+        VStack(spacing: 20) {
+            Spacer()
+            Image(artwork.name)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .padding()
+            Spacer()
             
+            NavigationLink(destination: WallPlacerView(selectedArtwork: artwork)) {
+                Text("Im Raum ansehen")
+                    .font(.headline)
+                    .foregroundColor(Color.accentColor)
+                    .padding()
+                    .background(.white)
+                    .cornerRadius(8)
+                    .padding()
+            }
         }
+        .navigationTitle(artwork.name)
     }
 }
 
@@ -110,6 +96,7 @@ struct WallPlacerView: View {
     @State private var showSettings = false
     @State private var showLiDARAlert = false
     @State private var showFallbackMessage = false
+    @State private var showInstructionOverlay = true
     @ObservedObject private var arManager = ARManager()
     
     var selectedArtwork: Artwork
@@ -131,47 +118,28 @@ struct WallPlacerView: View {
                 )
             }
             
-            // Zahnrad-Button oben rechts
-            VStack {
-                HStack {
-                    Spacer()
+            // Anweisungsoverlay
+            if showInstructionOverlay {
+                VStack(spacing: 20) {
+                    Image("Instruction") // Dein ImageSet Name
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 150, height: 150) // Anpassen nach Bedarf
                     
-                    // Rotations-Button
-                    Button(action: {
-                        arManager.rotateArtwork()
-                    }) {
-                        Image(systemName: "rotate.right")
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .padding()
-                            .background(Color.white.opacity(0.7))
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    }
-                    .tint(Color("AccentColor"))
-                    .padding([.top, .trailing], 20)
-                    
-                    // Zahnrad-Button
-                    Button(action: {
-                        // Aktion beim Tippen auf den Zahnrad-Button
-                        print("Gear button pressed")
-                        showSettings.toggle()
-                    }) {
-                        Image(systemName: "gearshape.fill")
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .padding()
-                            .background(Color.white.opacity(0.7))
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    }
-                    .tint(Color("AccentColor"))
-                    .padding([.top, .trailing], 20)
-                    .sheet(isPresented: $showSettings) {
-                        SettingsView(selectedArtwork: .constant(selectedArtwork))
-                    }
+                    Text("Richte dein Smartphone auf eine Wand,\nan der das Kunstwerk gut zur Geltung kommt.\nTippe, um es zu platzieren!")
+                        .font(.body)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding()
                 }
-                Spacer()
+                .padding()
+                .background(Color.black.opacity(0.8))
+                .cornerRadius(12)
+                .padding()
+                .onTapGesture {
+                    showInstructionOverlay = false
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             
             // Fallback-Nachricht nur anzeigen, wenn LiDAR verfügbar ist und der Fallback aktiv wird
@@ -183,6 +151,17 @@ struct WallPlacerView: View {
                     .background(Color("AccentColor"))
                     .cornerRadius(8)
                     .padding([.bottom, .trailing], 20)
+            }
+        }
+        .navigationTitle("AR-Ansicht")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    arManager.rotateArtwork()
+                }) {
+                    Image(systemName: "rotate.right")
+                }
             }
         }
     }
