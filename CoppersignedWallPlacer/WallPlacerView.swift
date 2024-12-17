@@ -27,24 +27,103 @@ class CustomARView: ARView, ARCoachingOverlayViewDelegate {
     }
 }
 
-struct ContentView: View {
+struct RootView: View {
+    var body: some View {
+        NavigationView {
+            ArtworkListView()
+                .navigationTitle("Kunstwerke von Coppersigned")
+        }
+    }
+}
+
+struct ArtworkListView: View {
+    var body: some View {
+        List(artworks) { artwork in
+            NavigationLink(destination: ArtworkDetailView(artwork: artwork)) {
+                HStack {
+                    Image(artwork.name)
+                        .resizable()
+                    //                        .scaledToFit()
+                        .scaledToFill()
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(8)
+                    
+                    Text(artwork.name)
+                        .font(.headline)
+                }
+            }
+        }
+        .listStyle(PlainListStyle())
+    }
+}
+
+struct ArtworkDetailView: View {
+    let artwork: Artwork
+    @State private var showARView = false
+    
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 20) {
+                Spacer()
+                Image(artwork.name)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                Spacer()
+                
+                //            Text("\(artwork.name)")
+                //                .font(.title)
+                //
+                //            Text("\(Int(artwork.width))cm x \(Int(artwork.height))cm")
+                //                .foregroundColor(.gray)
+            }
+            .navigationTitle(artwork.name)
+            .sheet(isPresented: $showARView) {
+                WallPlacerView(selectedArtwork: artwork) // Angepasster Init in ContentView
+            }
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        showARView = true
+                    }) {
+                        Text("Im Raum ansehen")
+                            .font(.headline)
+                            .foregroundColor(Color.accentColor)
+                            .padding()
+                            .background(.white)
+                            .cornerRadius(8)
+                    }
+                    .padding()
+                    
+                    Spacer()
+                }
+            }
+            
+        }
+    }
+}
+
+struct WallPlacerView: View {
     @State private var showSettings = false
-    @State private var selectedArtwork: Artwork? = artworks.first(where: { aw in aw.name == "Cyclone" })
-    @StateObject private var arManager = ARManager()
     @State private var showLiDARAlert = false
-    @State private var showFallbackMessage = false // Zustand für Fallback-Nachricht
+    @State private var showFallbackMessage = false
+    @ObservedObject private var arManager = ARManager()
+    
+    var selectedArtwork: Artwork
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             ARViewContainer(
-                selectedArtwork: $selectedArtwork,
+                selectedArtwork: .constant(selectedArtwork),
                 arManager: arManager,
                 showLiDARAlert: $showLiDARAlert,
                 showFallbackMessage: $showFallbackMessage
             )
             .edgesIgnoringSafeArea(.all)
             .alert(isPresented: $showLiDARAlert) {
-                // UI Strings bleiben auf Deutsch
                 Alert(
                     title: Text("Hinweis"),
                     message: Text("Für beste Ergebnisse wird ein Gerät mit LiDAR-Sensor empfohlen."),
@@ -89,7 +168,7 @@ struct ContentView: View {
                     .tint(Color("AccentColor"))
                     .padding([.top, .trailing], 20)
                     .sheet(isPresented: $showSettings) {
-                        SettingsView(selectedArtwork: $selectedArtwork)
+                        SettingsView(selectedArtwork: .constant(selectedArtwork))
                     }
                 }
                 Spacer()
@@ -230,7 +309,7 @@ struct ARViewContainer: UIViewRepresentable {
                 }
             }
         }
-
+        
         func placeArtwork(arView: ARView, transform: simd_float4x4, artwork: Artwork, rotateForWall: Bool) {
             // Vorheriges Anker-Entity entfernen, falls vorhanden
             if let existingAnchor = currentAnchor {
@@ -377,5 +456,5 @@ let artworks = [
 ]
 
 #Preview {
-    ContentView()
+    //ContentView()
 }
