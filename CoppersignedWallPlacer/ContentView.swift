@@ -424,14 +424,16 @@ struct Artwork: Identifiable, Hashable {
 }
 
 let artworks = [
-    Artwork(name: "Jungle Fever", width: 120, height: 80),
+    Artwork(name: "Dancing Molecules", width: 70, height: 50),
+    Artwork(name: "Mermade Home", width: 100, height: 80),
     Artwork(name: "Self Blooming", width: 40, height: 120),
     Artwork(name: "Fire", width: 40, height: 120),
+    Artwork(name: "Sleeping Muse", width: 120, height: 40),
     Artwork(name: "Magic Lamp", width: 110, height: 80),
     Artwork(name: "Golden waves", width: 40, height: 120),
-    Artwork(name: "Earth", width: 120, height: 40),
     Artwork(name: "Gilded Fold", width: 50, height: 50),
-    Artwork(name: "Cyclone", width: 115, height: 80),
+    Artwork(name: "Blue Lagoon", width: 40, height: 60),
+    Artwork(name: "Pacific", width: 50, height: 50),
 ]
 
 #Preview {
