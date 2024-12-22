@@ -31,7 +31,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ArtworkListView()
-                .navigationTitle("Kunstwerke von Coppersigned")
+                .navigationTitle("Kunstwerke")
         }
     }
 }
@@ -110,6 +110,7 @@ struct WallPlacerView: View {
                 showFallbackMessage: $showFallbackMessage
             )
             .edgesIgnoringSafeArea(.all)
+            .disabled(showInstructionOverlay)
             .alert(isPresented: $showLiDARAlert) {
                 Alert(
                     title: Text("Hinweis"),
@@ -360,59 +361,6 @@ class ARManager: ObservableObject {
     
     func rotateArtwork() {
         rotateArtworkSubject.send()
-    }
-}
-
-struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Binding var selectedArtwork: Artwork?
-    
-    var body: some View {
-        NavigationView {
-            VStack {
-                // UI auf Deutsch belassen
-                List(artworks) { artwork in
-                    HStack {
-                        Image(artwork.name)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                            .cornerRadius(8)
-                            .padding(.trailing, 8)
-                        
-                        VStack(alignment: .leading) {
-                            Text(artwork.name)
-                                .font(.headline)
-                                .foregroundColor(selectedArtwork == artwork ? .white : .primary)
-                            Text("\(String(format: "%.0f", artwork.width))cm x \(String(format: "%.0f", artwork.height))cm")
-                                .foregroundColor(.gray)
-                                .font(.subheadline)
-                        }
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
-                    .background(selectedArtwork == artwork ? Color("AccentColor") : Color.clear)
-                    .cornerRadius(8)
-                    .onTapGesture {
-                        selectedArtwork = artwork
-                        dismiss()
-                    }
-                }
-                .listStyle(PlainListStyle())
-                
-                Link("Besuchen Sie Coppersigned.com", destination: URL(string: "https://coppersigned.com")!)
-                    .font(.headline)
-                    .padding()
-            }
-            .navigationTitle("Wähle ein Kunstwerk")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Schließen") {
-                        dismiss()
-                    }
-                }
-            }
-        }
     }
 }
 
