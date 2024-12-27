@@ -131,7 +131,12 @@ struct WallPlacerView: View {
                         .font(.footnote)
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
-                        .padding()
+                    HStack(spacing: 20) {
+                        Spacer()
+                        Button("Hinweis ausblenden  ") {
+                            showInstructionOverlay = false
+                        }
+                    }
                 }
                 .padding()
                 .background(Color.black.opacity(0.8))
@@ -158,10 +163,17 @@ struct WallPlacerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    arManager.rotateArtwork()
-                }) {
-                    Image(systemName: "rotate.right")
+                HStack {
+                    Button(action: {
+                        showInstructionOverlay = true
+                    }) {
+                        Image(systemName: "info.circle")
+                    }
+                    Button(action: {
+                        arManager.rotateArtwork()
+                    }) {
+                        Image(systemName: "rotate.right")
+                    }
                 }
             }
         }
