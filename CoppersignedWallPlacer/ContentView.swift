@@ -127,7 +127,7 @@ struct WallPlacerView: View {
                         .scaledToFit()
                         .frame(width: 150, height: 150) // Anpassen nach Bedarf
                     
-                    Text("Richte dein Smartphone auf eine Wand,\nan der das Kunstwerk gut zur Geltung kommt.\n**Tippe dort, wo du es platzieren willst!**")
+                    Text("Richte dein Smartphone auf eine Wand, an der das Kunstwerk gut zur Geltung kommt.\n\n**TIPPE DORT, WO DU ES PLATZIEREN WILLST!**")
                         .font(.footnote)
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
