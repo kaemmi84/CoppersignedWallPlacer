@@ -384,7 +384,7 @@ struct Artwork: Identifiable, Hashable {
 }
 
 let artworks = [
-    Artwork(name: "Dancing Molecules", width: 70, height: 50),
+    Artwork(name: "Dancing Molecules", width: 80, height: 60),
     Artwork(name: "Mermade Home", width: 100, height: 80),
     Artwork(name: "Self Blooming", width: 40, height: 120),
     Artwork(name: "Fire", width: 40, height: 120),
