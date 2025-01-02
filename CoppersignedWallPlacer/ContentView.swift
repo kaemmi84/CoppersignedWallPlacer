@@ -31,7 +31,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ArtworkListView()
-                .navigationTitle("Kunstwerke")
+                .navigationTitle("artworks")
         }
     }
 }
@@ -57,7 +57,7 @@ struct ArtworkListView: View {
             .listStyle(PlainListStyle())
             
             
-            Link("Besuchen Sie Coppersigned.com", destination: URL(string: "https://coppersigned.com")!)
+            Link("website_text", destination: URL(string: "https://coppersigned.com")!)
                 .font(.headline)
                 .padding()
         }
@@ -79,7 +79,7 @@ struct ArtworkDetailView: View {
             Spacer()
             
             NavigationLink(destination: WallPlacerView(selectedArtwork: artwork)) {
-                Text("Im Raum ansehen")
+                Text("view_in_room")
                     .font(.headline)
                     .foregroundColor(Color.accentColor)
                     .padding()
@@ -113,8 +113,8 @@ struct WallPlacerView: View {
             .disabled(showInstructionOverlay)
             .alert(isPresented: $showLiDARAlert) {
                 Alert(
-                    title: Text("Hinweis"),
-                    message: Text("Für beste Ergebnisse wird ein Gerät mit LiDAR-Sensor empfohlen."),
+                    title: Text("hint"),
+                    message: Text("lidar_hint"),
                     dismissButton: .default(Text("OK"))
                 )
             }
@@ -127,13 +127,13 @@ struct WallPlacerView: View {
                         .scaledToFit()
                         .frame(width: 150, height: 150) // Anpassen nach Bedarf
                     
-                    Text("Richte dein Smartphone auf eine Wand, an der das Kunstwerk gut zur Geltung kommt.\n\n**TIPPE DORT, WO DU ES PLATZIEREN WILLST!**")
+                    Text("use_hint")
                         .font(.footnote)
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
                     HStack(spacing: 20) {
                         Spacer()
-                        Button("Hinweis ausblenden  ") {
+                        Button("hide_hint") {
                             showInstructionOverlay = false
                         }
                     }
@@ -150,7 +150,7 @@ struct WallPlacerView: View {
             
             // Fallback-Nachricht nur anzeigen, wenn LiDAR verfügbar ist und der Fallback aktiv wird
             if !deviceHasLiDAR() && showFallbackMessage {
-                Text("Keine geeignete Oberfläche gefunden.\nBitte bewege dich langsam, um Ebenen zu erkennen.\nTexturierte Oberflächen werden besser erkannt.")
+                Text("error_hint")
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding()
@@ -159,7 +159,7 @@ struct WallPlacerView: View {
                     .padding([.bottom, .trailing], 20)
             }
         }
-        .navigationTitle("AR-Ansicht")
+        .navigationTitle("ar_view")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
