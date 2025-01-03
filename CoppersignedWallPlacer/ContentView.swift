@@ -30,8 +30,10 @@ class CustomARView: ARView, ARCoachingOverlayViewDelegate {
 struct ContentView: View {
     var body: some View {
         NavigationView {
-            ArtworkListView()
-                .navigationTitle("artworks")
+            //            ArtworkListView()
+            //                .navigationTitle("artwork")
+            GridView()
+                .navigationTitle("artwork")
         }
     }
 }
@@ -61,6 +63,57 @@ struct ArtworkListView: View {
                 .font(.headline)
                 .padding()
         }
+    }
+}
+
+struct GridView: View {
+    private static let initialColumns = 3
+    
+    @State private var gridColumns = Array(repeating: GridItem(.flexible()), count: initialColumns)
+    
+    var body: some View {
+        VStack {
+            Text("Please choose a artwork")
+                .font(.subheadline)
+                .foregroundColor(.primary)
+            ScrollView {
+                LazyVGrid(columns: gridColumns) {
+                    ForEach(artworks) { artwork in
+                        GeometryReader { geo in
+                            NavigationLink(destination: ArtworkDetailView(artwork: artwork)) {
+                                GridItemView(size: geo.size.width, artwork: artwork)
+                            }
+                        }
+                        .cornerRadius(8.0)
+                        .aspectRatio(1, contentMode: .fit)
+                    }
+                }
+                .padding()
+            }
+        }
+        .navigationBarTitle("Artwork Gallery")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct GridItemView: View {
+    let size: Double
+    let artwork: Artwork
+    
+    
+    var body: some View {
+        VStack() {
+            Spacer()
+            Image(artwork.name)
+                .resizable()
+                .scaledToFill()
+                .padding()
+            Text(artwork.name)
+                .font(.footnote)
+            Text("\(Int(artwork.width)) x \(Int(artwork.height)) cm")
+                .font(.footnote)
+            Spacer()
+        }.frame(width: size, height: size)
     }
 }
 
