@@ -120,7 +120,14 @@
 
     },
     "Please choose a artwork" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte wähle ein Kunstwerk aus"
+          }
+        }
+      }
     },
     "use_hint" : {
       "extractionState" : "manual",
