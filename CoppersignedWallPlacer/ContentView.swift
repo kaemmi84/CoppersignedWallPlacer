@@ -30,38 +30,8 @@ class CustomARView: ARView, ARCoachingOverlayViewDelegate {
 struct ContentView: View {
     var body: some View {
         NavigationView {
-            //            ArtworkListView()
-            //                .navigationTitle("artwork")
             GridView()
                 .navigationTitle("artwork")
-        }
-    }
-}
-
-struct ArtworkListView: View {
-    var body: some View {
-        VStack {
-            List(artworks) { artwork in
-                NavigationLink(destination: ArtworkDetailView(artwork: artwork)) {
-                    HStack {
-                        Image(artwork.name)
-                            .resizable()
-                        //                        .scaledToFit()
-                            .scaledToFill()
-                            .frame(width: 50, height: 50)
-                            .cornerRadius(8)
-                        
-                        Text(artwork.name)
-                            .font(.headline)
-                    }
-                }
-            }
-            .listStyle(PlainListStyle())
-            
-            
-            Link("website_text", destination: URL(string: "https://coppersigned.com")!)
-                .font(.headline)
-                .padding()
         }
     }
 }
@@ -76,20 +46,21 @@ struct GridView: View {
             Text("Please choose a artwork")
                 .font(.subheadline)
                 .foregroundColor(.accent)
+            
             ScrollView {
                 LazyVGrid(columns: gridColumns) {
                     ForEach(artworks) { artwork in
-                        GeometryReader { geo in
                             NavigationLink(destination: ArtworkDetailView(artwork: artwork)) {
-                                GridItemView(size: geo.size.width, artwork: artwork)
+                                GridItemView(size: 150, artwork: artwork)
                             }
-                        }
-                        .cornerRadius(8.0)
-                        .aspectRatio(1, contentMode: .fit)
                     }
                 }
                 .padding()
             }
+            
+            Link("website_text", destination: URL(string: "https://coppersigned.com")!)
+                .font(.headline)
+                .padding()
         }
         .navigationBarTitle("Artwork Gallery")
         .navigationBarTitleDisplayMode(.inline)
@@ -100,20 +71,38 @@ struct GridItemView: View {
     let size: Double
     let artwork: Artwork
     
-    
     var body: some View {
-        VStack() {
+        VStack(alignment: .center) {
             Spacer()
-            Image(artwork.name)
-                .resizable()
-                .scaledToFill()
-                .padding()
+            
+            // ZStack mit Rahmen + Bild
+            ZStack {
+                // Quadratischer Rahmen
+                Rectangle()
+                    .stroke(.clear, lineWidth: 2)
+                    .background(.copperBackground)
+                
+                // Bild selbst
+                Image(artwork.name)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(4) // Rand zwischen Bild und Rahmen
+            }.aspectRatio(1, contentMode: .fit)
+            
             Text(artwork.name)
-                .font(.footnote)
+                .foregroundColor(.primary)
+                .font(.caption2)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                .allowsTightening(true)
+            
             Text("\(Int(artwork.width)) x \(Int(artwork.height)) cm")
-                .font(.footnote)
+                .font(.caption2)
+                
+            
             Spacer()
-        }.frame(width: size, height: size)
+        }
+        .padding(.vertical, 10)
     }
 }
 
@@ -129,6 +118,11 @@ struct ArtworkDetailView: View {
                 .scaledToFit()
                 .frame(maxWidth: .infinity)
                 .padding()
+            
+            Text("\(Int(artwork.width)) x \(Int(artwork.height)) cm")
+                .foregroundColor(.accentColor)
+                .font(.subheadline)
+            
             Spacer()
             
             NavigationLink(destination: WallPlacerView(selectedArtwork: artwork)) {
