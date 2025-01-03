@@ -75,7 +75,7 @@ struct GridView: View {
         VStack {
             Text("Please choose a artwork")
                 .font(.subheadline)
-                .foregroundColor(.primary)
+                .foregroundColor(.accent)
             ScrollView {
                 LazyVGrid(columns: gridColumns) {
                     ForEach(artworks) { artwork in
