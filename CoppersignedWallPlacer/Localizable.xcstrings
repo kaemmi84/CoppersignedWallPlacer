@@ -163,6 +163,22 @@
         }
       }
     },
+    "visit_artwork_link" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunstwerk auf Seite ansehen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Artwork on Page"
+          }
+        }
+      }
+    },
     "website_text" : {
       "extractionState" : "manual",
       "localizations" : {

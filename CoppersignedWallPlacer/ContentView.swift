@@ -123,6 +123,15 @@ struct ArtworkDetailView: View {
                 .foregroundColor(.accentColor)
                 .font(.subheadline)
             
+            // URL-Link mit Icon darunter
+            if let url = URL(string: artwork.url) {
+                Link(destination: url) {
+                    Label("visit_artwork_link", systemImage: "link")
+                        .font(.subheadline)
+                        .foregroundColor(.accentColor)
+                }
+            }
+            
             Spacer()
             
             NavigationLink(destination: WallPlacerView(selectedArtwork: artwork)) {
@@ -211,6 +220,11 @@ struct WallPlacerView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
+                    if let url = URL(string: selectedArtwork.url) {
+                        Link(destination: url) {
+                            Image(systemName: "link")
+                        }
+                    }
                     Button(action: {
                         showInstructionOverlay = true
                     }) {
@@ -428,19 +442,20 @@ struct Artwork: Identifiable, Hashable {
     let name: String
     let width: CGFloat // in Zentimetern
     let height: CGFloat // in Zentimetern
+    let url: String
 }
 
 let artworks = [
-    Artwork(name: "Dancing Molecules", width: 80, height: 60),
-    Artwork(name: "Mermade Home", width: 100, height: 80),
-    Artwork(name: "Self Blooming", width: 40, height: 120),
-    Artwork(name: "Fire", width: 40, height: 120),
-    Artwork(name: "Sleeping Muse", width: 120, height: 40),
-    Artwork(name: "Magic Lamp", width: 110, height: 80),
-    Artwork(name: "Golden waves", width: 40, height: 120),
-    Artwork(name: "Gilded Fold", width: 50, height: 50),
-    Artwork(name: "Blue Lagoon", width: 40, height: 60),
-    Artwork(name: "Pacific", width: 50, height: 50),
+    Artwork(name: "Dancing Molecules", width: 80, height: 60, url: "https://coppersigned.com/#artwork-922"),
+    Artwork(name: "Mermade Home", width: 100, height: 80, url: "https://coppersigned.com/#artwork-907"),
+    Artwork(name: "Self Blooming", width: 40, height: 120, url: "https://coppersigned.com/#artwork-796"),
+    Artwork(name: "Fire", width: 40, height: 120, url: "https://coppersigned.com/#artwork-785"),
+    Artwork(name: "Sleeping Muse", width: 120, height: 40, url: "https://coppersigned.com/#artwork-756"),
+    Artwork(name: "Magic Lamp", width: 110, height: 80, url: "https://coppersigned.com/#artwork-786"),
+    Artwork(name: "Golden waves", width: 40, height: 120, url: "https://coppersigned.com/#artwork-396"),
+    Artwork(name: "Gilded Fold", width: 50, height: 50, url: "https://coppersigned.com/#artwork-793"),
+    Artwork(name: "Blue Lagoon", width: 40, height: 60, url: "https://coppersigned.com/#artwork-835"),
+    Artwork(name: "Pacific", width: 50, height: 50, url: "https://coppersigned.com/#artwork-830"),
 ]
 
 #Preview {
