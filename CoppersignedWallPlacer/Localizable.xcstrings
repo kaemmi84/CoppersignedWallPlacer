@@ -46,14 +46,7 @@
       }
     },
     "Artwork Gallery" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Artwork Gallerie"
-          }
-        }
-      }
+
     },
     "error_hint" : {
       "extractionState" : "manual",
