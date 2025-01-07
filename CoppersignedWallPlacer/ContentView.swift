@@ -220,11 +220,6 @@ struct WallPlacerView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack {
-                    if let url = URL(string: selectedArtwork.url) {
-                        Link(destination: url) {
-                            Image(systemName: "link")
-                        }
-                    }
                     Button(action: {
                         showInstructionOverlay = true
                     }) {
@@ -445,17 +440,26 @@ struct Artwork: Identifiable, Hashable {
     let url: String
 }
 
+func getArtworkURL(artworkId: Int) -> String {
+    let currentLanguage = Locale.current.language.languageCode?.identifier
+    if currentLanguage == "de" {
+        return "https://coppersigned.com/de/#artwork-" + String(artworkId);
+    } else {
+        return "https://coppersigned.com/#artwork-" + String(artworkId);
+    }
+}
+
 let artworks = [
-    Artwork(name: "Dancing Molecules", width: 80, height: 60, url: "https://coppersigned.com/#artwork-922"),
-    Artwork(name: "Mermade Home", width: 100, height: 80, url: "https://coppersigned.com/#artwork-907"),
-    Artwork(name: "Self Blooming", width: 40, height: 120, url: "https://coppersigned.com/#artwork-796"),
-    Artwork(name: "Fire", width: 40, height: 120, url: "https://coppersigned.com/#artwork-785"),
-    Artwork(name: "Sleeping Muse", width: 120, height: 40, url: "https://coppersigned.com/#artwork-756"),
-    Artwork(name: "Magic Lamp", width: 110, height: 80, url: "https://coppersigned.com/#artwork-786"),
-    Artwork(name: "Golden waves", width: 40, height: 120, url: "https://coppersigned.com/#artwork-396"),
-    Artwork(name: "Gilded Fold", width: 50, height: 50, url: "https://coppersigned.com/#artwork-793"),
-    Artwork(name: "Blue Lagoon", width: 40, height: 60, url: "https://coppersigned.com/#artwork-835"),
-    Artwork(name: "Pacific", width: 50, height: 50, url: "https://coppersigned.com/#artwork-830"),
+    Artwork(name: "Dancing Molecules", width: 80, height: 60, url: getArtworkURL(artworkId: 922)),
+    Artwork(name: "Mermade Home", width: 100, height: 80, url: getArtworkURL(artworkId: 907)),
+    Artwork(name: "Self Blooming", width: 40, height: 120, url: getArtworkURL(artworkId: 796)),
+    Artwork(name: "Fire", width: 40, height: 120, url: getArtworkURL(artworkId: 785)),
+    Artwork(name: "Sleeping Muse", width: 120, height: 40, url: getArtworkURL(artworkId: 756)),
+    Artwork(name: "Magic Lamp", width: 110, height: 80, url: getArtworkURL(artworkId: 786)),
+    Artwork(name: "Golden waves", width: 40, height: 120, url: getArtworkURL(artworkId: 396)),
+    Artwork(name: "Gilded Fold", width: 50, height: 50, url: getArtworkURL(artworkId: 793)),
+    Artwork(name: "Blue Lagoon", width: 40, height: 60, url: getArtworkURL(artworkId: 835)),
+    Artwork(name: "Pacific", width: 50, height: 50, url: getArtworkURL(artworkId: 830)),
 ]
 
 #Preview {
