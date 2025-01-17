@@ -45,7 +45,7 @@
     <resources>
         <image name="logo" width="212" height="149"/>
         <namedColor name="launchScreenBG">
-            <color red="0.99999994039535522" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.99607843137254903" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

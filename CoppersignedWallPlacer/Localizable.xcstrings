@@ -167,14 +167,14 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kunstwerk auf Seite ansehen"
+            "state" : "needs_review",
+            "value" : "Kunstwerk auf Webseite ansehen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View Artwork on Page"
+            "value" : "View Artwork on Website"
           }
         }
       }
